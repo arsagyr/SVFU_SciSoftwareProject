@@ -7,7 +7,8 @@
 
 # Разделение обязанностей: функция получает готовые данные и
 # путь. Она не вычисляет формулу и не выбирает каталог результатов.
-
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 

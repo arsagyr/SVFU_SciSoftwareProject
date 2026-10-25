@@ -12,15 +12,14 @@
 ### Схема проекта 
 ```
 scientific_project/
-|−− main.py
-|−− src/
-| |−− __init__.py
-| |−− calculations.py
-| `−− visualization.py
-|−− data/
-|−− results/
-|−− requirements.txt
-`−− README.md
+├── app.py                ← Flask-приложение
+├── main.py               ← ваш существующий CLI-скрипт
+├── src/
+│   ├── calculations.py
+│   └── visualization.py
+├── templates/
+│   └── index.html
+└── results/              ← сюда сохраняются plot.png, data.csv, metrics.txt
 ```
 
 ### Состав отчёта 
