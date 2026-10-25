@@ -58,9 +58,16 @@ def index():
         except Exception as e:
             error = str(e)
 
+    metrics_display = None
+    if metrics:
+        metrics_display = [
+            (calculations.METRIC_LABELS.get(k, k), v) for k, v in metrics.items()
+        ]
+
     return render_template("index.html",
                            **context,
                            metrics=metrics,
+                           metrics_display=metrics_display,
                            plot_url=plot_url,
                            error=error)
 

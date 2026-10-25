@@ -43,12 +43,16 @@
     <h2>График</h2>
     <img src="{{ plot_url }}" alt="График функции">
 
-    <h2>Метрики</h2>
-    <div class="metrics">
-      {% for key, value in metrics.items() %}
-        <div>{{ key }}: {{ value }}</div>
-      {% endfor %}
-    </div>
+
+    {% if metrics_display %}
+        <h2>Метрики</h2>
+        <div class="metrics">
+            {% for label, value in metrics_display %}
+            <div><strong>{{ label }}:</strong> {{ value }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
 
     <h2>Файлы результатов</h2>
     <ul>

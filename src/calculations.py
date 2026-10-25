@@ -14,6 +14,18 @@
 from src.classes import Whole_Domain
 import numpy as np
 
+# calculations.py
+
+METRIC_LABELS = {
+    "mean":      "Среднее значение",
+    "min":       "Минимум",
+    "max":       "Максимум",
+    "std":       "Стандартное отклонение",
+    "min_point": "Точка минимума",
+    "max_point": "Точка максимума",
+    "integral":  "Интеграл (метод трапеций)",
+}
+
 domain = Whole_Domain(formula = 'x')
 
 def make_data(start, end, n):
@@ -34,3 +46,10 @@ def calculate_metrics(x, y) -> dict:
         "max_point": (float(x[i_max]), float(y[i_max])),
         "integral": float(np.trapezoid(y, x)),  
     }
+        # "Среднее":     float(np.mean(y)),
+        # "Минимум":      float(np.min(y)),
+        # "Максимум":      float(np.max(y)),
+        # "Стандартное отклонение":      float(np.std(y)),
+        # "Координаты минимума": (float(x[i_min]), float(y[i_min])),
+        # "координаты максимума": (float(x[i_max]), float(y[i_max])),
+        # "Интеграл": float(np.trapezoid(y, x)),  
