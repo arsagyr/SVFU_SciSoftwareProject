@@ -1,0 +1,7 @@
+all:
+	python3 main.py
+ 
+deactivate:
+	deactivate
+install:
+	python3 -m pip install -r requirements.txt
