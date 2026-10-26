@@ -1,92 +1,96 @@
-import streamlit as st
-import numpy as np
 from pathlib import Path
-import io
-import sys
+import numpy as np
+from flask import Flask, render_template, request, send_file, url_for
 
-# Предполагаем, что ваши модули находятся в src/
-sys.path.append(str(Path(__file__).resolve().parent))
-from src import calculations, visualization
+from src import classes, visualization, calculations
 
-st.set_page_config(page_title="Анализ функции", layout="wide")
-st.title("📈 Интерактивный анализ функции")
 
-# --- Боковая панель для ввода параметров ---
-with st.sidebar:
-    st.header("Параметры")
-    formula_str = st.text_area("Формула (используйте x)", value="sin(x*2)", height=100)
-    col1, col2 = st.columns(2)
-    with col1:
-        a = st.number_input("Начало интервала (a)", value=0.0, step=0.1)
-    with col2:
-        b = st.number_input("Конец интервала (b)", value=10.0, step=0.1)
-    n = st.slider("Число точек", min_value=10, max_value=5000, value=900, step=10)
-    
-    run_button = st.button("🚀 Выполнить расчёт", type="primary")
 
-# --- Основная область ---
-if run_button:
-    try:
-        # 1. Установка формулы
-        calculations.domain.set_formula(formula_str)
-        
-        # 2. Генерация данных
-        x, y = calculations.make_data(a, b, n)
-        
-        # 3. Вычисление метрик
-        metrics = calculations.calculate_metrics(x, y)
-        
-        # 4. Отображение графика
-        # Вариант А: если save_plot умеет возвращать fig
-        # fig = visualization.save_plot(x, y, path=None, title=f"y = {formula_str}", return_fig=True)
-        # st.pyplot(fig)
-        
-        # Вариант Б: создаём график прямо здесь для Streamlit
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(figsize=(10, 4))
-        ax.plot(x, y)
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_title(f"y = {formula_str}")
-        ax.grid(True)
-        st.pyplot(fig)
-        plt.close(fig)
-        
-        # 5. Отображение метрик
-        st.subheader("Результаты расчёта")
-        col_m1, col_m2, col_m3 = st.columns(3)
-        col_m1.metric("Среднее", f"{metrics['mean']:.4f}")
-        col_m2.metric("Минимум", f"{metrics['min']:.4f}")
-        col_m3.metric("Максимум", f"{metrics['max']:.4f}")
-        
-        with st.expander("Показать все метрики"):
-            st.json(metrics)
-        
-        # 6. Таблица с данными
-        st.subheader("Данные")
-        # Преобразуем в формат, понятный st.dataframe
-        data_for_df = {"x": x, "y": y}
-        st.dataframe(data_for_df, use_container_width=True)
-        
-        # 7. Кнопки для скачивания
-        # CSV с данными
-        csv_buffer = io.StringIO()
-        np.savetxt(csv_buffer, np.column_stack([x, y]), delimiter=",", header="x,y", comments="", fmt="%.6f")
-        st.download_button(
-            label="📥 Скачать data.csv",
-            data=csv_buffer.getvalue(),
-            file_name="data.csv",
-            mime="text/csv",
-        )
-        
-        # TXT с метриками
-        metrics_text = "\n".join([f"{k}: {v}" for k, v in metrics.items()])
-        st.download_button(
-            label="📥 Скачать metrics.txt",
-            data=metrics_text,
-            file_name="metrics.txt",
-            mime="text/plain",
-        )
-        
-    except Exception as e:
-        st.error(f"Ошибка при расчёте: {e}")
+domain = classes.Whole_Domain(formula = 'x')
+
+app = Flask(__name__)
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+RESULTS_DIR = PROJECT_ROOT / "results"
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def save_metrics(metrics: dict, path: Path):
+    with open(path, "w", encoding="utf-8") as f:
+        for key, value in metrics.items():
+            f.write(f"{key}: {value}\n")
+
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    context = {"formula": "sin(x**2)", "a": 0.0, "b": "sqrt(8 * pi)", "n": 900}
+    error = None
+    metrics = None
+    plot_url = None
+
+    if request.method == "POST":
+        try:
+            # 1. Читаем параметры из формы
+            formula = request.form.get("formula", "sin(x)").strip()
+            domain.min_x = calculations.parse_value(request.form["a"])
+            domain.max_x = calculations.parse_value(request.form["b"])
+            domain.formula = formula
+            n = int(request.form.get("n", 900))
+            
+
+            # 2. Считаем
+            x,y = domain.make_data(n)
+            metrics = domain.calculate_metrics(x,y)
+
+            # 3. Сохраняем файлы результатов
+            visualization.save_plot(x, y, RESULTS_DIR / "plot.png", f"y = {formula}")
+            np.savetxt(RESULTS_DIR / "data.csv",
+                       np.column_stack([x, y]),
+                       delimiter=",", header="x,y", comments="", fmt="%.6f")
+            save_metrics(metrics, RESULTS_DIR / "metrics.txt")
+
+            # 4. Ссылка на график (с параметром-меткой, чтобы браузер не кэшировал старую картинку)
+            plot_url = url_for("get_plot", v=n)
+
+            context.update(formula=formula, a=domain.min_x, b=domain.max_x, n=n)
+
+        except Exception as e:
+            error = str(e)
+
+    metrics_display = None
+    if metrics:
+        metrics_display = [
+            (calculations.METRIC_LABELS.get(k, k), v) for k, v in metrics.items()
+        ]
+
+    return render_template("index.html",
+                           **context,
+                           metrics=metrics,
+                           metrics_display=metrics_display,
+                           plot_url=plot_url,
+                           error=error)
+
+
+@app.route("/plot.png")
+def get_plot():
+    """Отдаёт актуальный график из results/."""
+    path = RESULTS_DIR / "plot.png"
+    if not path.exists():
+        return "График ещё не построен", 404
+    return send_file(path, mimetype="image/png")
+
+
+@app.route("/download/data.csv")
+def download_data():
+    return send_file(RESULTS_DIR / "data.csv", as_attachment=True,
+                     download_name="data.csv")
+
+
+@app.route("/download/metrics.txt")
+def download_metrics():
+    return send_file(RESULTS_DIR / "metrics.txt", as_attachment=True,
+                     download_name="metrics.txt")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

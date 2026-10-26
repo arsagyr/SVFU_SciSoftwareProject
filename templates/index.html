@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Анализ функции</title>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    form { display: grid; gap: .6rem; margin-bottom: 1.5rem; }
+    label { display: flex; gap: .5rem; align-items: center; }
+    input[type=text] { width: 100%; padding: .3rem; }
+    input[type=number] { width: 8rem; padding: .3rem; }
+    button { padding: .5rem 1.2rem; cursor: pointer; }
+    .error { color: #b00020; margin: 1rem 0; }
+    .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: .3rem 2rem; }
+    .metrics div { font-family: monospace; }
+    img { max-width: 100%; border: 1px solid #ddd; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Анализ функции</h1>
+
+  <form method="post">
+    <label>Начало интервала (a):
+    <input type="text" name="a" value="{{ a }}" placeholder="0 или pi/2">
+    </label>
+    <label>Конец интервала (b):
+    <input type="text" name="b" value="{{ b }}" placeholder="2*pi">
+    </label>
+    <label>Формула:
+    <input type="text" name="formula" value="{{ formula }}" placeholder="sin(pi*x)">
+    </label>
+    <label>Число точек (n):
+      <input type="number" name="n" value="{{ n }}" min="2">
+    </label>
+    <button type="submit">Выполнить расчёт</button>
+  </form>
+
+  {% if error %}
+    <p class="error">Ошибка: {{ error }}</p>
+  {% endif %}
+
+  {% if metrics %}
+    <h2>График</h2>
+    <img src="{{ plot_url }}" alt="График функции">
+
+
+    {% if metrics_display %}
+        <h2>Метрики</h2>
+        <div class="metrics">
+            {% for label, value in metrics_display %}
+            <div><strong>{{ label }}:</strong> {{ value }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+
+    <h2>Файлы результатов</h2>
+    <ul>
+      <li><a href="{{ url_for('download_data') }}">data.csv</a></li>
+      <li><a href="{{ url_for('download_metrics') }}">metrics.txt</a></li>
+      <li><a href="{{ url_for('get_plot') }}" download="plot.png">plot.png</a></li>
+    </ul>
+  {% endif %}
+</body>
+</html>
