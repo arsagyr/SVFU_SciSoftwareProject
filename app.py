@@ -3,7 +3,7 @@ import io
 import numpy as np
 from flask import Flask, render_template, request, send_file, url_for
 
-from src import calculations, visualization
+from src import calculations, visualization, classes
 
 app = Flask(__name__)
 
@@ -20,7 +20,7 @@ def save_metrics(metrics: dict, path: Path):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    context = {"formula": "sin(x*2)", "a": 0.0, "b": 10.0, "n": 900}
+    context = {"formula": "sin(x*2)", "a": 0.0, "b": "sqrt(8 * pi)", "n": 900}
     error = None
     metrics = None
     plot_url = None
@@ -29,14 +29,10 @@ def index():
         try:
             # 1. Читаем параметры из формы
             formula = request.form.get("formula", "sin(x)").strip()
-            a = float(request.form.get("a", 0))
-            b = float(request.form.get("b", 10))
+            a = calculations.parse_value(request.form["a"])
+            b = calculations.parse_value(request.form["b"])
             n = int(request.form.get("n", 900))
 
-            if n < 2:
-                raise ValueError("Число точек должно быть ≥ 2")
-            if a >= b:
-                raise ValueError("Левая граница должна быть меньше правой")
 
             # 2. Считаем
             calculations.domain.set_formula(formula)

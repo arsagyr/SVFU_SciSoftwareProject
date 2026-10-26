@@ -20,14 +20,14 @@
   <h1>Анализ функции</h1>
 
   <form method="post">
-    <label>Формула (используйте x):
-      <input type="text" name="formula" value="{{ formula }}">
-    </label>
     <label>Начало интервала (a):
-      <input type="number" step="any" name="a" value="{{ a }}">
+    <input type="text" name="a" value="{{ a }}" placeholder="0 или pi/2">
     </label>
     <label>Конец интервала (b):
-      <input type="number" step="any" name="b" value="{{ b }}">
+    <input type="text" name="b" value="{{ b }}" placeholder="2*pi">
+    </label>
+    <label>Формула:
+    <input type="text" name="formula" value="{{ formula }}" placeholder="sin(pi*x)">
     </label>
     <label>Число точек (n):
       <input type="number" name="n" value="{{ n }}" min="2">

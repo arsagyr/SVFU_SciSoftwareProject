@@ -21,6 +21,7 @@
 # действий, а не формулы и оформление графика.
 
 from pathlib import Path
+from math import pi, sqrt
 import numpy as np
 from src import calculations, visualization
 
@@ -34,7 +35,7 @@ def save_metrics(metrics: dict, path: Path):
 def save_xy_csv(x, y, path: Path):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = np.column_stack([x, y])                 # массив N×2
+    data = np.column_stack([x, y])                 
     np.savetxt(path, data, delimiter=",",
                header="x,y", comments="", fmt="%.6f")
                
@@ -44,7 +45,7 @@ def main():
     results_dir.mkdir(parents=True, exist_ok=True)
 
     calculations.domain.set_formula('sin(x*2)')
-    x, y = calculations.make_data(0, 10, 900)
+    x, y = calculations.make_data(0, 10, sqrt(8 * pi))
     metrics = calculations.calculate_metrics(x,y)
 
     print(x, '\n', y)

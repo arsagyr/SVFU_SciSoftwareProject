@@ -1,20 +1,86 @@
-# make_data(start, end, n)
-# - проверить, что end > start и n >= 50
-# - создать массив x из n точек
-# - вычислить y по формуле варианта
-# - вернуть массивы x и y
-
-# calculate_metrics(x, y)
-# - вычислить среднее, минимум, максимум и стандартное отклонение
-# - найти координаты минимума и максимума
-# - вычислить интеграл методом трапеций
-# - вернуть словарь с семью результатами
-
-# Подсказка: используйте linspace, argmin, argmax и trapezoid.
 from src.classes import Whole_Domain
 import numpy as np
 
-# calculations.py
+from sympy import symbols, pi, E, sqrt, sin, cos, tan, exp, log, Abs, sympify, Integer, Float
+from sympy.parsing.sympy_parser import (
+    parse_expr, standard_transformations, implicit_multiplication_application
+)
+
+TRANSFORMATIONS = standard_transformations + (implicit_multiplication_application,)
+
+SAFE_LOCALS = {
+    "pi":  pi,
+    "E":   E,
+    "e":   E,
+    "tau": 2 * pi,
+    "sqrt": sqrt,
+    "sin":  sin,
+    "cos":  cos,
+    "tan":  tan,
+    "exp":  exp,
+    "log":  log,
+    "Abs":  Abs,
+}
+
+
+def parse_value(s, name: str = "значение") -> float:
+    """Строка или число → float. Понимает pi, sqrt(2), 2*pi, 3.14."""
+    # число
+    if isinstance(s, (int, float)):
+        return float(s)
+
+    text = str(s).strip()
+    if not text:
+        raise ValueError(f"{name}: пустая строка")
+
+    # обычное число
+    try:
+        return float(text)
+    except ValueError:
+        pass
+
+    # выражение SymPy
+    try:
+        expr = parse_expr(text, transformations=TRANSFORMATIONS,
+                          local_dict=SAFE_LOCALS,
+                                  global_dict={
+                                    "__builtins__": {},
+                                    "Integer": Integer,
+                                    "Float": Float,
+                                }
+                          )
+    except Exception as e:
+        raise ValueError(f"{name}: не удалось разобрать '{text}': {e}") from e
+
+    if expr.free_symbols:
+        raise ValueError(f"{name}: в выражении '{text}' есть переменные")
+    try:
+        return float(expr)
+    except Exception as e:
+        raise ValueError(f"{name}: не удалось вычислить '{text}': {e}") from e
+
+
+# from sympy import symbols, N, pi, E
+# from sympy.parsing.sympy_parser import (
+#     parse_expr, standard_transformations, implicit_multiplication_application
+# )
+
+# transformations = standard_transformations + (implicit_multiplication_application,)
+# x = symbols("x")
+
+# CONSTANTS = {
+#     "pi":  pi,
+#     "E":   E,
+#     "e":   E,
+#     "tau": 2 * pi,
+# }
+
+# def parse_value(s: str) -> float:
+#     """Принимает '3.14', 'pi/2', '2*pi', 'sqrt(2)' — возвращает float."""
+#     local = {**CONSTANTS, "x": x}
+#     expr = parse_expr(str(s), transformations=transformations, local_dict=local)
+#     return float(expr.evalf())
+ 
 
 METRIC_LABELS = {
     "mean":      "Среднее значение",
@@ -46,10 +112,4 @@ def calculate_metrics(x, y) -> dict:
         "max_point": (float(x[i_max]), float(y[i_max])),
         "integral": float(np.trapezoid(y, x)),  
     }
-        # "Среднее":     float(np.mean(y)),
-        # "Минимум":      float(np.min(y)),
-        # "Максимум":      float(np.max(y)),
-        # "Стандартное отклонение":      float(np.std(y)),
-        # "Координаты минимума": (float(x[i_min]), float(y[i_min])),
-        # "координаты максимума": (float(x[i_max]), float(y[i_max])),
-        # "Интеграл": float(np.trapezoid(y, x)),  
+
