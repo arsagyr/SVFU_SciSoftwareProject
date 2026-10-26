@@ -45,7 +45,7 @@ def main():
     results_dir.mkdir(parents=True, exist_ok=True)
 
     calculations.domain.set_formula('sin(x*2)')
-    x, y = calculations.make_data(0, 10, sqrt(8 * pi))
+    x, y = calculations.make_data(0, sqrt(8 * pi), 900)
     metrics = calculations.calculate_metrics(x,y)
 
     print(x, '\n', y)

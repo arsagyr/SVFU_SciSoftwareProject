@@ -1,9 +1,12 @@
 from pathlib import Path
-import io
 import numpy as np
 from flask import Flask, render_template, request, send_file, url_for
 
-from src import calculations, visualization, classes
+from src import classes, visualization, calculations
+
+
+
+domain = classes.Whole_Domain(formula = 'x')
 
 app = Flask(__name__)
 
@@ -20,7 +23,7 @@ def save_metrics(metrics: dict, path: Path):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    context = {"formula": "sin(x*2)", "a": 0.0, "b": "sqrt(8 * pi)", "n": 900}
+    context = {"formula": "sin(x**2)", "a": 0.0, "b": "sqrt(8 * pi)", "n": 900}
     error = None
     metrics = None
     plot_url = None
@@ -29,15 +32,15 @@ def index():
         try:
             # 1. Читаем параметры из формы
             formula = request.form.get("formula", "sin(x)").strip()
-            a = calculations.parse_value(request.form["a"])
-            b = calculations.parse_value(request.form["b"])
+            domain.min_x = calculations.parse_value(request.form["a"])
+            domain.max_x = calculations.parse_value(request.form["b"])
+            domain.formula = formula
             n = int(request.form.get("n", 900))
-
+            
 
             # 2. Считаем
-            calculations.domain.set_formula(formula)
-            x, y = calculations.make_data(a, b, n)
-            metrics = calculations.calculate_metrics(x, y)
+            x,y = domain.make_data(n)
+            metrics = domain.calculate_metrics(x,y)
 
             # 3. Сохраняем файлы результатов
             visualization.save_plot(x, y, RESULTS_DIR / "plot.png", f"y = {formula}")
@@ -49,7 +52,7 @@ def index():
             # 4. Ссылка на график (с параметром-меткой, чтобы браузер не кэшировал старую картинку)
             plot_url = url_for("get_plot", v=n)
 
-            context.update(formula=formula, a=a, b=b, n=n)
+            context.update(formula=formula, a=domain.min_x, b=domain.max_x, n=n)
 
         except Exception as e:
             error = str(e)
