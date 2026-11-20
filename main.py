@@ -3,24 +3,17 @@ from src import equations, integration, variants, utils
 
 def main():
     # Настройки
-    variant_num = 1
+    variant_num = 6
     XTOL = 1e-8
     RTOL = 1e-8
     MAX_ITER = 100
     
     EPSABS = 1e-8
     EPSREL = 1e-8
-    
-    print(f"=== Запуск лабораторной работы (Вариант {variant_num}) ===")
-    
-    # Получаем данные варианта
+ 
     f, a_root, b_root, g, a_int, b_int, exact_integral = variants.get_variant(variant_num)
     
-    # ==========================================
-    # ЧАСТЬ А: Поиск корня
-    # ==========================================
-    print("\n--- ЧАСТЬ А: Поиск корня ---")
-    
+    print("\nЧасть А:")
     # 1. Проверка знаков
     print(f"f(a) = {f(a_root):.4f}, f(b) = {f(b_root):.4f}")
     
@@ -43,10 +36,8 @@ def main():
     )
     print(f"Разность приближений: {root_comparison['difference_roots']:.2e}")
     
-    # ==========================================
-    # ЧАСТЬ В: Определенный интеграл
-    # ==========================================
-    print("\n--- ЧАСТЬ В: Определенный интеграл ---")
+ 
+    print("\nЧасть В:")
     
     quad_val, quad_err = integration.scipy_quad(g, a_int, b_int, epsabs=EPSABS, epsrel=EPSREL)
     print(f"SciPy quad: {quad_val:.10f} (оценка ошибки: {quad_err:.2e})")
@@ -71,11 +62,7 @@ def main():
         actual_err = comp.get("actual_error_Tn", float('nan'))
         print(f"{n:<5} | {Tn:.10f} | {comp['method_difference']:.2e} | {actual_err:.2e}")
 
-    # ==========================================
-    # СОХРАНЕНИЕ РЕЗУЛЬТАТОВ
-    # ==========================================
-    print("\n--- Сохранение результатов ---")
-    
+
     final_data = {
         "variant": variant_num,
         "parameters": {

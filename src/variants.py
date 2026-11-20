@@ -2,14 +2,9 @@ import numpy as np
 import math
 
 def get_variant(variant_num):
-    """
-    Возвращает данные для выбранного варианта.
-    Здесь приведен пример для варианта №1. 
-    Вам нужно будет заменить функции и интервалы на свои.
-    """
-    if variant_num == 1:
+    if variant_num == 6:
         # Часть А: xe^x − 1 = 0 [0, 1] 
-        f = lambda x: x*math.e**x - 1
+        f = lambda x: x*math.e**x - 1  
         a_root, b_root = 0.0, 1.0
         
         # Часть В: e^(−x) cos(2x) [0, π]
