@@ -10,7 +10,8 @@ def get_variant(variant_num):
         # Часть В: e^(−x) cos(2x) [0, π]
         g = lambda x: np.exp(-x**2)
         a_int, b_int = 0.0, math.pi
-        exact_integral = 0.746824132812427
+        # Неопределённый интеграл e^(−x)*cos(2x) равен (2in2x - cos2x)/5 * e^(−x) 
+        exact_integral = 0.382714432694
         
         return f, a_root, b_root, g, a_int, b_int, exact_integral
     else:
