@@ -27,8 +27,7 @@ class Variant:
         return np.sin(2 * X + Y) + np.cos(X - 2 * Y)
 
     def mask(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
-        return (X ** 2 + Y ** 2) <= (np.pi / 2) ** 2
-
+        return 1 < self.evaluate(X, Y)
 
 _VARIANTS = {
     6: Variant(
